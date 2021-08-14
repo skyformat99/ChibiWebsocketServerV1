@@ -14,11 +14,11 @@
     (let timeloop ()    
         (if ( < (- (current-seconds) start) sec) (timeloop))))
 
-(define (clientClose fd)
+(define (onclose fd)
    (display (list 'closed fd))
    (newline))
 
-(define (clientOpen fd)
+(define (onopen fd)
     (set! gblFd fd)
     (display (list 'opened fd))   
     (newline))
@@ -28,7 +28,7 @@
     (display (list 'frame 'sent 'client gblFd))
     (newline))
 
-(define (msgReady fd msg size type)    
+(define (onmessage fd msg size type)    
     (display (list 'frame 'recieved 'client fd))
     (newline)
     (ws_send_txt msg)) ;echo

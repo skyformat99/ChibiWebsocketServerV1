@@ -13,17 +13,17 @@ static sexp env;
 
  void onopen(int fd)
  { 
-  sexp_gc_var1(obj1); 
+  sexp_gc_var1(cmd); 
   sexp_gc_preserve1(ctx,cmd);
-  cmd = sexp_list2(ctx, sexp_intern(ctx, "clientOpen", -1),sexp_make_integer(ctx, fd));
+  cmd = sexp_list2(ctx, sexp_intern(ctx, "onopen", -1),sexp_make_integer(ctx, fd));
   sexp_eval(ctx, cmd, NULL);
   sexp_gc_release1(ctx);
  }
 void onclose(int fd)
 {
-  sexp_gc_var1(obj1); 
+  sexp_gc_var1(cmd); 
   sexp_gc_preserve1(ctx,cmd);
-  cmd = sexp_list2(ctx, sexp_intern(ctx, "clientClose", -1),sexp_make_integer(ctx, fd));
+  cmd = sexp_list2(ctx, sexp_intern(ctx, "onclose", -1),sexp_make_integer(ctx, fd));
   sexp_eval(ctx, cmd, NULL);
   sexp_gc_release1(ctx); 
 }
@@ -35,7 +35,7 @@ void onmessage(int fd, const unsigned char *msg, uint64_t size, int type)
   cmd = sexp_list3(ctx,sexp_c_string(ctx, msg, -1),
          sexp_make_integer(ctx, size),sexp_make_integer(ctx, type));
   cmd = sexp_cons(ctx,sexp_make_integer(ctx, fd), cmd);
-  cmd = sexp_cons(ctx,sexp_intern(ctx, "msgReady", -1),cmd); 
+  cmd = sexp_cons(ctx,sexp_intern(ctx, "onmessage", -1),cmd); 
   sexp_eval(ctx, cmd, NULL);
   sexp_gc_release1(ctx);   
 }
@@ -65,7 +65,6 @@ int main(void){
   setbuf(stdout, NULL); 
   sexp_gc_var3(obj1,obj2,ret); 
   sexp_gc_preserve3(ctx,obj1,obj2,ret);
-  /* load a file containing Scheme code */
   obj1 = sexp_c_string(ctx, "./main.scm", -1);
   obj2 = sexp_list1(ctx, sexp_intern(ctx, "main", -1));
   ret = sexp_load(ctx, obj1, NULL);
@@ -75,8 +74,6 @@ int main(void){
   }
   init();    
   sexp_eval(ctx, obj2, NULL);
-  
-  /* release the local variables */
   sexp_gc_release3(ctx);  
 }
 
