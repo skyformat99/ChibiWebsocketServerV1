@@ -28,7 +28,6 @@
     (display (list 'frame 'sent 'client gblFd))
     (newline))
 
-
 (define (msgReady fd msg size type)    
     (display (list 'frame 'recieved 'client fd))
     (newline)
@@ -37,4 +36,5 @@
 (define (main) 
     (let loop ((count 0))   
         (delay 1)                
+        ;(ws_send_txt (number->string count))
    (loop (+ count 1))))
