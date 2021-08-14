@@ -3,9 +3,11 @@
     (websocket))
 
 (define gblFd 1)
+(define port 8080)
+(define nonblocking 1)
 
 (define (init fp)   
-  (ws_socket fp 8080 1))
+  (ws_socket fp port nonblocking))
 
 (define (delay sec)
     (define start (current-seconds))
@@ -21,12 +23,12 @@
     (display (list 'opened fd))   
     (newline))
 
-(define (msgReady fd msg size type) 
+(define (msgReady fd msg size type)
     (ws_sendframe_txt gblFd msg #f)
-  )
+    (display (list 'frame 'sent 'client fd))
+    (newline))
 
 (define (main) 
     (let loop ((count 0))   
-        (delay 1)    
-        ;(ws_sendframe_txt gblFd (number->string count) #f)
+        (delay 1)                
    (loop (+ count 1))))

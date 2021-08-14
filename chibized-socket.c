@@ -13,52 +13,47 @@ static sexp env;
 
  void onopen(int fd)
  { 
-   sexp_gc_var1(obj1); 
-   sexp_gc_preserve1(ctx,obj1);
-   obj1 = sexp_list2(ctx, sexp_intern(ctx, "clientOpen", -1),sexp_make_integer(ctx, fd));
-   sexp_eval(ctx, obj1, NULL);
+  sexp_gc_var1(obj1); 
+  sexp_gc_preserve1(ctx,cmd);
+  cmd = sexp_list2(ctx, sexp_intern(ctx, "clientOpen", -1),sexp_make_integer(ctx, fd));
+  sexp_eval(ctx, cmd, NULL);
   sexp_gc_release1(ctx);
  }
- void onclose(int fd)
- {
-     sexp_gc_var1(obj1); 
-   sexp_gc_preserve1(ctx,obj1);
-   obj1 = sexp_list2(ctx, sexp_intern(ctx, "clientClose", -1),sexp_make_integer(ctx, fd));
-   sexp_eval(ctx, obj1, NULL);
-   sexp_gc_release1(ctx); 
- }
+void onclose(int fd)
+{
+  sexp_gc_var1(obj1); 
+  sexp_gc_preserve1(ctx,cmd);
+  cmd = sexp_list2(ctx, sexp_intern(ctx, "clientClose", -1),sexp_make_integer(ctx, fd));
+  sexp_eval(ctx, cmd, NULL);
+  sexp_gc_release1(ctx); 
+}
 
 void onmessage(int fd, const unsigned char *msg, uint64_t size, int type)
 {  
-   sexp_gc_var1(obj1); 
-   sexp_gc_preserve1(ctx,obj1);
-   obj1 = sexp_list3(ctx,sexp_c_string(ctx, msg, -1),
-          sexp_make_integer(ctx, size),sexp_make_integer(ctx, type));
-   obj1 = sexp_cons(ctx,sexp_make_integer(ctx, fd), obj1);
-   obj1 = sexp_cons(ctx,sexp_intern(ctx, "msgReady", -1),obj1); 
-   sexp_eval(ctx, obj1, NULL);
-   sexp_gc_release1(ctx);
-   
+  sexp_gc_var1(cmd); 
+  sexp_gc_preserve1(ctx,cmd);
+  cmd = sexp_list3(ctx,sexp_c_string(ctx, msg, -1),
+         sexp_make_integer(ctx, size),sexp_make_integer(ctx, type));
+  cmd = sexp_cons(ctx,sexp_make_integer(ctx, fd), cmd);
+  cmd = sexp_cons(ctx,sexp_intern(ctx, "msgReady", -1),cmd); 
+  sexp_eval(ctx, cmd, NULL);
+  sexp_gc_release1(ctx);   
 }
 
- /* 
-  *  ws_socket(&evs, 8080, 0) Never returns.  
-  *  ws_socket(&evs, 8080, 1) If you want to execute code past ws_socket
-  */  
 void init(void)
 {  
   struct ws_events evs;
-	evs.onopen    = &onopen;
-	evs.onclose   = &onclose;
-	evs.onmessage = &onmessage;
- sexp_gc_var3(obj1,arg_sym,arg_val); 
- sexp_gc_preserve3(ctx,obj1,arg_sym,arg_val);
- arg_sym = sexp_intern(ctx, "fp", -1);
- arg_val = &evs; 
- sexp_env_define(ctx,env, arg_sym, arg_val); 
- sexp_eval_string(ctx, "(init fp)", -1, NULL); 
- sexp_gc_release3(ctx);	
- printf("Server Initialized\n");  	
+  evs.onopen    = &onopen;
+  evs.onclose   = &onclose;
+  evs.onmessage = &onmessage;
+  sexp_gc_var3(arg_sym,arg_val,ret); 
+  sexp_gc_preserve3(ctx,arg_sym,arg_val,ret);
+  arg_sym = sexp_intern(ctx, "fp", -1);
+  arg_val = &evs; 
+  sexp_env_define(ctx,env, arg_sym, arg_val); 
+  ret=sexp_eval_string(ctx, "(init fp)", -1, NULL);
+  sexp_gc_release3(ctx);	
+  printf("Server Initialized\n");  	
 }
 
 int main(void){
@@ -68,16 +63,21 @@ int main(void){
   sexp_load_standard_ports(ctx, NULL, stdin, stdout, stderr, 1);
   env = sexp_context_env(ctx);
   setbuf(stdout, NULL); 
-  sexp_gc_var2(obj1,obj2); 
-  sexp_gc_preserve2(ctx,obj1,obj2);
+  sexp_gc_var3(obj1,obj2,ret); 
+  sexp_gc_preserve3(ctx,obj1,obj2,ret);
   /* load a file containing Scheme code */
   obj1 = sexp_c_string(ctx, "./main.scm", -1);
   obj2 = sexp_list1(ctx, sexp_intern(ctx, "main", -1));
-  sexp_load(ctx, obj1, NULL);
+  ret = sexp_load(ctx, obj1, NULL);
+  if (sexp_exceptionp(ret)) {
+       sexp_print_exception(ctx, ret, SEXP_FALSE);
+       return(-1);
+  }
   init();    
   sexp_eval(ctx, obj2, NULL);
+  
   /* release the local variables */
-  sexp_gc_release2(ctx);  
+  sexp_gc_release3(ctx);  
 }
 
  

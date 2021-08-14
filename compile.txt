@@ -13,7 +13,7 @@ gcc -lchibi-scheme -pthread -Wall -Wextra -O2 -I /usr/local/include -I ./include
 
 #Compile socket & link with libws
 
-gcc -lchibi-scheme -pthread -Wall -Wextra -O2 -I /usr/local/include -I ./include/ -std=c99 -pedantic chibized-socket.c wslib.a -o socket
+gcc -lchibi-scheme -pthread -Wall -Wextra -O2 -I /usr/local/include -I ./include/ -std=c99 -pedantic chibized-socket.c -o socket
 
 
 
