@@ -4,7 +4,7 @@ WsSever C library Integrated into chibi
 https://github.com/Theldus/wsServer.git
 
 
-git checkout V2
+git checkout V1
 
 run.sh
 
